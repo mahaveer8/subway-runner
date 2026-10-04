@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>CYBER SURFER 2099 - Futuristic Endless Runner</title>
+  <meta name="description" content="A futuristic 3D cyberpunk endless runner inspired by Subway Surfers with Mag-Lev hyper trains, cyber enforcer mechs, laser gates, and neon hoverboards!">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+  <!-- Canvas Container -->
+  <div id="game-container"></div>
+
+  <!-- HUD Overlay -->
+  <div id="hud" class="ui-overlay hidden">
+    <!-- Top Stats Bar -->
+    <div class="hud-top-bar">
+      <div class="hud-card score-card">
+        <span class="hud-label">SCORE</span>
+        <span id="hud-score" class="hud-value">0</span>
+      </div>
+      <div class="hud-card coin-card">
+        <div class="coin-icon-mini"></div>
+        <span id="hud-coins" class="hud-value">0</span>
+      </div>
+      <div class="hud-card multiplier-card">
+        <span class="hud-label">MULTIPLIER</span>
+        <span id="hud-multiplier" class="hud-value">1x</span>
+      </div>
+      <button id="btn-pause-hud" class="btn-icon" aria-label="Pause Game">⏸️</button>
+    </div>
+
+    <!-- Active Power-up Badges Container -->
+    <div id="powerup-hud-container" class="powerup-container"></div>
+
+    <!-- Mobile Touch Control Hints / Touch Swipe Area -->
+    <div id="touch-controls-layer" class="touch-layer">
+      <div class="touch-zone left-zone" id="touch-left-btn">
+        <span class="arrow-hint">◀</span>
+      </div>
+      <div class="touch-zone right-zone" id="touch-right-btn">
+        <span class="arrow-hint">▶</span>
+      </div>
+      <div class="touch-actions-container">
+        <button id="btn-touch-jump" class="action-btn jump-btn">JUMP ▲</button>
+        <button id="btn-touch-slide" class="action-btn slide-btn">SLIDE ▼</button>
+        <button id="btn-touch-board" class="action-btn board-btn hidden">🛹 HOVERBOARD</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN MENU SCREEN -->
+  <div id="screen-main-menu" class="ui-overlay screen-active">
+    <div class="menu-backdrop"></div>
+    <div class="menu-content">
+      <div class="brand-title">
+        <h1 class="glitch-text" data-text="CYBER SURFER 2099">CYBER SURFER 2099</h1>
+        <span class="sub-title">FUTURISTIC 3D RUNNER</span>
+      </div>
+
+      <div class="character-preview-card">
+        <div class="high-score-banner">
+          🏆 BEST SCORE: <span id="menu-high-score">0</span>
+        </div>
+        <div class="total-coins-banner">
+          🪙 TOTAL COINS: <span id="menu-total-coins">0</span>
+        </div>
+      </div>
+
+      <div class="menu-buttons">
+        <button id="btn-start-game" class="btn-primary btn-glow">
+          <span class="btn-text">PLAY RUN</span>
+          <span class="btn-subtext">Tap or Press Space to Start</span>
+        </button>
+        <div class="btn-group-row">
+          <button id="btn-open-shop" class="btn-secondary">🛒 SHOP & SKINS</button>
+          <button id="btn-open-settings" class="btn-secondary">⚙️ SETTINGS</button>
+        </div>
+        <button id="btn-open-how-to" class="btn-tertiary">❓ HOW TO PLAY</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHOP MODAL -->
+  <div id="screen-shop" class="ui-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>CYBER STORE</h2>
+        <div class="coin-display-shop">🪙 <span id="shop-coin-count">0</span></div>
+        <button id="btn-close-shop" class="btn-close">✕</button>
+      </div>
+      
+      <div class="shop-tabs">
+        <button class="shop-tab active" data-tab="runners">RUNNER SKINS</button>
+        <button class="shop-tab" data-tab="boards">HOVERBOARDS</button>
+      </div>
+
+      <div class="shop-content-scroll">
+        <!-- Skins Grid -->
+        <div id="shop-items-grid" class="shop-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW TO PLAY MODAL -->
+  <div id="screen-how-to" class="ui-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>HOW TO PLAY</h2>
+        <button id="btn-close-how-to" class="btn-close">✕</button>
+      </div>
+      <div class="instructions-grid">
+        <div class="instruction-card">
+          <div class="key-icon">◀ / ▶</div>
+          <div class="gesture-icon">👈 Swipe Left / Right 👉</div>
+          <p>Switch Lanes to dodge trains and barriers</p>
+        </div>
+        <div class="instruction-card">
+          <div class="key-icon">▲ / Space</div>
+          <div class="gesture-icon">☝️ Swipe Up</div>
+          <p>Jump over hurdles & onto train ramps</p>
+        </div>
+        <div class="instruction-card">
+          <div class="key-icon">▼ / S</div>
+          <div class="gesture-icon">👇 Swipe Down</div>
+          <p>Slide under barriers / Fast-dive down mid-air</p>
+        </div>
+        <div class="instruction-card">
+          <div class="key-icon">Double Tap</div>
+          <div class="gesture-icon">🛹 Board Button</div>
+          <p>Activate Hoverboard for crash protection</p>
+        </div>
+      </div>
+
+      <div class="powerup-legend">
+        <h3>POWER-UPS & BOOSTERS</h3>
+        <div class="legend-items">
+          <div class="legend-item"><span class="p-icon mag">🧲</span> <strong>Magnet:</strong> Pulls all nearby coins</div>
+          <div class="legend-item"><span class="p-icon boost">🚀</span> <strong>Jetpack:</strong> Sky flight over all trains</div>
+          <div class="legend-item"><span class="p-icon sneak">👟</span> <strong>Sneakers:</strong> Super high leaps</div>
+          <div class="legend-item"><span class="p-icon slow">⏳</span> <strong>Slow-Mo:</strong> Slows track obstacles</div>
+          <div class="legend-item"><span class="p-icon mult">2️⃣</span> <strong>2X Multiplier:</strong> Doubles score</div>
+          <div class="legend-item"><span class="p-icon board">🛹</span> <strong>Hoverboard:</strong> Absorbs 1 crash impact</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAUSE MENU -->
+  <div id="screen-pause" class="ui-overlay hidden">
+    <div class="modal-card pause-card">
+      <h2>GAME PAUSED</h2>
+      <div class="pause-stats">
+        <p>Current Score: <span id="pause-score">0</span></p>
+        <p>Coins Picked: <span id="pause-coins">0</span></p>
+      </div>
+      <div class="pause-actions">
+        <button id="btn-resume-game" class="btn-primary">RESUME</button>
+        <button id="btn-restart-pause" class="btn-secondary">RESTART</button>
+        <button id="btn-quit-main" class="btn-tertiary">MAIN MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME OVER SCREEN -->
+  <div id="screen-game-over" class="ui-overlay hidden">
+    <div class="menu-backdrop blur-bg"></div>
+    <div class="modal-card game-over-card">
+      <div class="game-over-header">
+        <h1 class="danger-title">CRASHED!</h1>
+        <p id="new-high-score-badge" class="new-record-tag hidden">🎉 NEW HIGH SCORE! 🎉</p>
+      </div>
+
+      <div class="results-board">
+        <div class="result-row">
+          <span>Final Score</span>
+          <strong id="final-score-val" class="highlight-val">0</strong>
+        </div>
+        <div class="result-row">
+          <span>Coins Collected</span>
+          <strong id="final-coins-val" class="coin-val">🪙 0</strong>
+        </div>
+        <div class="result-row">
+          <span>Best High Score</span>
+          <strong id="best-score-val">0</strong>
+        </div>
+      </div>
+
+      <div class="game-over-actions">
+        <button id="btn-restart-game" class="btn-primary btn-glow">PLAY AGAIN 🔄</button>
+        <button id="btn-game-over-shop" class="btn-secondary">SHOP 🛒</button>
+        <button id="btn-game-over-menu" class="btn-tertiary">MAIN MENU 🏠</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div id="screen-settings" class="ui-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>SETTINGS</h2>
+        <button id="btn-close-settings" class="btn-close">✕</button>
+      </div>
+      <div class="settings-list">
+        <div class="setting-item">
+          <span>Sound Effects & Music</span>
+          <button id="toggle-audio" class="toggle-btn active">ON</button>
+        </div>
+        <div class="setting-item">
+          <span>On-Screen Touch Buttons</span>
+          <button id="toggle-touch-btn" class="toggle-btn active">ON</button>
+        </div>
+        <div class="setting-item">
+          <span>Graphics Quality</span>
+          <button id="toggle-graphics" class="toggle-btn">HIGH</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/audio.js"></script>
+  <script src="js/graphics.js"></script>
+  <script src="js/gameplay.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
